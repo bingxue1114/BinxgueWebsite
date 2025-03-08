@@ -309,3 +309,9 @@
 
 
 })()
+
+
+function toggleDescription(element) {
+    // 點擊時切換 class
+    element.classList.toggle("active");
+}

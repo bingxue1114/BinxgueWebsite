@@ -615,7 +615,7 @@ section {
     text-align: center;
     background: rgba(20, 157, 221, 0.75);
     transition: 0.3s;
-    width: 50%;
+    width: 100%;
 }
 
 .project .project-wrap .project-links a:hover {
@@ -702,6 +702,42 @@ section {
     /* 寬度填滿 */
     height: 100%;
     /* 高度填滿 */
+}
+
+
+/* 預設 .title-overlay-content 居中 */
+
+.title-overlay-content {
+    position: absolute;
+    top: -250%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    /*使用transform來讓元素真正居中*/
+    padding: 10px;
+    color: white;
+    /*白色文字，視需要調整*/
+    background-color: rgba(0, 0, 0, 0.7);
+    /*半透明背景，視需要調整*/
+    font-size: 1rem;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+    cursor: pointer;
+    z-index: 10;
+}
+
+
+/* 滑鼠懸停時顯示文字 (桌面版) */
+
+.project-wrap:hover .title-overlay-content {
+    opacity: 1;
+}
+
+
+/* 點擊時顯示文字 (手機版) */
+
+.title-overlay-content.active {
+    opacity: 1;
 }
 
 
@@ -1115,6 +1151,15 @@ section {
     100% {
         transform: rotate(360deg);
     }
+}
+
+.carousel-inner img {
+    width: 100%;
+    height: 400px;
+    object-fit: contain;
+    /* 顯示完整圖片，但可能有空白 */
+    background-color: white;
+    /* 設定背景顏色避免透明 */
 }
 
 
