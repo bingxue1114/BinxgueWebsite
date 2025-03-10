@@ -294,6 +294,51 @@
     });
 
 
+    // 禁止右鍵、長按、開發者工具、列印、截圖
+    function disableActions() {
+        // 禁止右鍵（電腦）
+        document.addEventListener("contextmenu", function(event) {
+            event.preventDefault();
+        });
+
+        // 禁止長按（手機、平板）
+        document.addEventListener("touchstart", function(event) {
+            if (event.touches.length > 1) {
+                event.preventDefault();
+            }
+        }, { passive: false });
+
+        // 禁止快捷鍵（Ctrl+S, Ctrl+P, Ctrl+U, Ctrl+Shift+I, F12）
+        document.addEventListener("keydown", function(event) {
+            if (
+                event.ctrlKey && ["s", "S", "p", "P", "u", "U", "i", "I", "j", "J", "c", "C"].includes(event.key)
+            ) {
+                event.preventDefault();
+            }
+            if (event.key === "F12" || (event.ctrlKey && event.shiftKey && event.key === "I")) {
+                event.preventDefault();
+            }
+            if (event.key === "PrintScreen") {
+                document.body.innerHTML = "<h1>⚠️ 禁止截圖！</h1>";
+            }
+        });
+
+        // 禁止列印
+        window.onbeforeprint = function() {
+            document.body.innerHTML = "<h1>⚠️ 禁止列印！</h1>";
+            setTimeout(function() {
+                location.reload();
+            }, 2000);
+        };
+
+        // 偵測開發者工具（手機 & 電腦）
+        setInterval(function() {
+            if (window.outerWidth - window.innerWidth > 160 || window.outerHeight - window.innerHeight > 160) {
+                document.body.innerHTML = "<h1>⚠️ 開發者工具已啟用，請關閉後重新整理。</h1>";
+            }
+        }, 1000);
+    }
+
     // 當用戶點擊 PDF 連結時，開啟新分頁並顯示 PDF
     document.querySelectorAll(".pdf-link").forEach(function(link) {
         link.addEventListener("click", function() {
@@ -304,16 +349,27 @@
                 pdfWindow.document.write(`
                 <html>
                 <head>
-                    <title>PDF 檢視器（禁止下載）</title>
+                    <title>PDF 檢視器（禁止下載、列印、截圖）</title>
                     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
                     <style>
-                        body { margin: 0; text-align: center; font-family: Arial, sans-serif; }
-                        canvas { display: block; margin: 10px auto; border: 1px solid #ccc; }
+                        body { margin: 0; text-align: center; font-family: Arial, sans-serif; background-color: black; }
+                        canvas { display: block; margin: 10px auto; border: 1px solid #ccc; pointer-events: none; }
+                        .overlay { 
+                            position: absolute; 
+                            top: 0; left: 0; width: 100%; height: 100%; 
+                            background: rgba(0, 0, 0, 0.2); 
+                            z-index: 1000; 
+                        }
+                        @media print {
+                            body * { display: none !important; }
+                            body::after { content: "⚠️ 禁止列印"; font-size: 50px; color: red; display: block; text-align: center; }
+                        }
                     </style>
                 </head>
                 <body>
-                    <h3>PDF 檢視器（禁止下載）</h3>
+                    <h3>PDF 檢視器（禁止下載、列印、截圖）</h3>
                     <div id="pdfContainer">🔄 正在載入 PDF...</div>
+                    <div class="overlay"></div>
 
                     <script>
                         var url = "${pdfUrl}";
@@ -346,35 +402,18 @@
                             console.error("PDF 加載錯誤:", error);
                         });
 
-                        // 禁止右鍵（電腦）
-                        document.addEventListener("contextmenu", function (event) {
-                            event.preventDefault();
-                        });
+                        // 禁止列印
+                        window.onbeforeprint = function() {
+                            document.body.innerHTML = "<h1>⚠️ 禁止列印！</h1>";
+                            setTimeout(function() {
+                                location.reload();
+                            }, 2000);
+                        };
 
-                        // 禁止長按（手機、平板）
-                        document.addEventListener("touchstart", function (event) {
-                            if (event.touches.length > 1) {
-                                event.preventDefault();
-                            }
-                        }, { passive: false });
-
-                        // 禁止快捷鍵（Ctrl+S, Ctrl+P, Ctrl+U, Ctrl+Shift+I, F12）
-                        document.addEventListener("keydown", function (event) {
-                            if (
-                                event.ctrlKey && 
-                                ["s", "S", "p", "P", "u", "U", "i", "I", "j", "J", "c", "C"].includes(event.key)
-                            ) {
-                                event.preventDefault();
-                            }
-                            if (event.key === "F12" || (event.ctrlKey && event.shiftKey && event.key === "I")) {
-                                event.preventDefault();
-                            }
-                        });
-
-                        // 禁止開發者工具（針對手機）
+                        // 禁止開發者工具
                         setInterval(function() {
                             if (window.outerWidth - window.innerWidth > 160 || window.outerHeight - window.innerHeight > 160) {
-                                document.body.innerHTML = "<h1>⚠️ 開發者工具已啟用，請關閉後重新整理。</h1>";
+                                document.body.innerHTML = "<h1>⚠️ 禁止開發者工具</h1>";
                             }
                         }, 1000);
                     <\/script>
