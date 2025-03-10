@@ -17,9 +17,11 @@
 </head>
 
 <body>
-    <div id="pdfContainer" class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">正在載入 PDF...</span>
+    <div id="pdfContainer">
+        <div class="spinner-border ms-auto text-primary" role="status" aria-hidden="true"></div>
+        <strong class="text-primary">正在載入 PDF...</strong>
     </div>
+
     <div class="overlay"></div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
