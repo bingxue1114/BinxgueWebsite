@@ -294,15 +294,93 @@
     });
 
 
+    // 當用戶點擊 PDF 連結時，載入對應的 PDF
+    document.querySelectorAll(".pdf-link").forEach(function(link) {
+        link.addEventListener("click", function() {
+            var pdfUrl = link.getAttribute("data-pdf"); // 取得每個連結的 PDF 路徑
 
+            var pdfWindow = window.open("", "_blank");
 
+            if (pdfWindow) {
+                pdfWindow.document.write(`
+                <html>
+                <head>
+                    <title>PDF 檢視器</title>
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+                    <style>
+                        body { margin: 0; text-align: center; font-family: Arial, sans-serif; }
+                        canvas { display: block; margin: 10px auto; border: 1px solid #ccc; }
+                    </style>
+                </head>
+                <body>
+                    <div id="pdfContainer">🔄 正在載入 PDF...</div>
 
+                    <script>
+                        var url = "${pdfUrl}";
+                        var pdfjsLib = window["pdfjs-dist/build/pdf"];
+                        pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js";
 
+                        pdfjsLib.getDocument(url).promise.then(function (pdf) {
+                            document.getElementById("pdfContainer").innerHTML = ""; // 清空載入字樣
+                            for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                                pdf.getPage(pageNum).then(function (page) {
+                                    var scale = 1.5;
+                                    var viewport = page.getViewport({ scale: scale });
+
+                                    var canvas = document.createElement("canvas");
+                                    var context = canvas.getContext("2d");
+                                    canvas.width = viewport.width;
+                                    canvas.height = viewport.height;
+
+                                    var renderContext = {
+                                        canvasContext: context,
+                                        viewport: viewport
+                                    };
+
+                                    document.getElementById("pdfContainer").appendChild(canvas);
+                                    page.render(renderContext);
+                                });
+                            }
+                        }).catch(function(error) {
+                            document.getElementById("pdfContainer").innerHTML = "❌ 無法載入 PDF，請檢查檔案路徑！";
+                            console.error("PDF 加載錯誤:", error);
+                        });
+
+                        // 禁止右鍵
+                        document.addEventListener("contextmenu", function (event) {
+                            event.preventDefault();
+                        });
+
+                        // 禁止快捷鍵 (Ctrl+S, Ctrl+P, Ctrl+U, Ctrl+Shift+I, F12)
+                        document.addEventListener("keydown", function (event) {
+                            if (
+                                event.ctrlKey && 
+                                ["s", "S", "p", "P", "u", "U", "i", "I", "j", "J", "c", "C"].includes(event.key)
+                            ) {
+                                event.preventDefault();
+                            }
+                            if (event.key === "F12") {
+                                event.preventDefault();
+                            }
+                        });
+                    <\/script>
+                </body>
+                </html>
+            `);
+            } else {
+                alert("彈出視窗被瀏覽器阻擋，請允許彈出視窗！");
+            }
+        });
+    });
 
 
 
 
 })()
+
+
+
+
 
 
 function toggleDescription(element) {
