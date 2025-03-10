@@ -294,18 +294,17 @@
     });
 
 
-    // 當用戶點擊 PDF 連結時，載入對應的 PDF
+    // 當用戶點擊 PDF 連結時，開啟新分頁並顯示 PDF
     document.querySelectorAll(".pdf-link").forEach(function(link) {
         link.addEventListener("click", function() {
-            var pdfUrl = link.getAttribute("data-pdf"); // 取得每個連結的 PDF 路徑
-
-            var pdfWindow = window.open("", "_blank");
+            var pdfUrl = link.getAttribute("data-pdf"); // 取得 PDF 路徑
+            var pdfWindow = window.open("", "_blank"); // 在新分頁開啟 PDF
 
             if (pdfWindow) {
                 pdfWindow.document.write(`
                 <html>
                 <head>
-                    <title>PDF 檢視器</title>
+                    <title>PDF 檢視器（禁止下載）</title>
                     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
                     <style>
                         body { margin: 0; text-align: center; font-family: Arial, sans-serif; }
@@ -313,6 +312,7 @@
                     </style>
                 </head>
                 <body>
+                    <h3>PDF 檢視器（禁止下載）</h3>
                     <div id="pdfContainer">🔄 正在載入 PDF...</div>
 
                     <script>
@@ -346,12 +346,19 @@
                             console.error("PDF 加載錯誤:", error);
                         });
 
-                        // 禁止右鍵
+                        // 禁止右鍵（電腦）
                         document.addEventListener("contextmenu", function (event) {
                             event.preventDefault();
                         });
 
-                        // 禁止快捷鍵 (Ctrl+S, Ctrl+P, Ctrl+U, Ctrl+Shift+I, F12)
+                        // 禁止長按（手機、平板）
+                        document.addEventListener("touchstart", function (event) {
+                            if (event.touches.length > 1) {
+                                event.preventDefault();
+                            }
+                        }, { passive: false });
+
+                        // 禁止快捷鍵（Ctrl+S, Ctrl+P, Ctrl+U, Ctrl+Shift+I, F12）
                         document.addEventListener("keydown", function (event) {
                             if (
                                 event.ctrlKey && 
@@ -359,10 +366,17 @@
                             ) {
                                 event.preventDefault();
                             }
-                            if (event.key === "F12") {
+                            if (event.key === "F12" || (event.ctrlKey && event.shiftKey && event.key === "I")) {
                                 event.preventDefault();
                             }
                         });
+
+                        // 禁止開發者工具（針對手機）
+                        setInterval(function() {
+                            if (window.outerWidth - window.innerWidth > 160 || window.outerHeight - window.innerHeight > 160) {
+                                document.body.innerHTML = "<h1>⚠️ 開發者工具已啟用，請關閉後重新整理。</h1>";
+                            }
+                        }, 1000);
                     <\/script>
                 </body>
                 </html>
