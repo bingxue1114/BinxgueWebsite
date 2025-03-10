@@ -356,11 +356,18 @@
 
 
 
+
+
 })()
 
 
 
-
+function openModal(imgElement) {
+    var modalImg = document.getElementById("modalImage");
+    modalImg.src = imgElement.src;
+    var myModal = new bootstrap.Modal(document.getElementById("imageModal"));
+    myModal.show();
+}
 
 
 function toggleDescription(element) {
