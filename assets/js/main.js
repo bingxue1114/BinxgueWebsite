@@ -294,21 +294,14 @@
     });
 
 
-    // 禁止右鍵、長按、開發者工具、列印、截圖
+    // 禁止開發者工具、右鍵、長按、列印、截圖
     function disableActions() {
         // 禁止右鍵（電腦）
         document.addEventListener("contextmenu", function(event) {
             event.preventDefault();
         });
 
-        // 禁止長按（手機、平板）
-        document.addEventListener("touchstart", function(event) {
-            if (event.touches.length > 1) {
-                event.preventDefault();
-            }
-        }, { passive: false });
-
-        // 禁止快捷鍵（Ctrl+S, Ctrl+P, Ctrl+U, Ctrl+Shift+I, F12）
+        // 禁止快捷鍵
         document.addEventListener("keydown", function(event) {
             if (
                 event.ctrlKey && ["s", "S", "p", "P", "u", "U", "i", "I", "j", "J", "c", "C"].includes(event.key)
@@ -331,12 +324,19 @@
             }, 2000);
         };
 
-        // 偵測開發者工具（手機 & 電腦）
+        // 偵測開發者工具
         setInterval(function() {
             if (window.outerWidth - window.innerWidth > 160 || window.outerHeight - window.innerHeight > 160) {
-                document.body.innerHTML = "<h1>⚠️ 開發者工具已啟用，請關閉後重新整理。</h1>";
+                document.body.innerHTML = "<h1>⚠️ 偵測到開發者工具，請關閉後重新整理！</h1>";
             }
         }, 1000);
+
+        // 防止螢幕錄影
+        document.addEventListener("fullscreenchange", function() {
+            if (document.fullscreenElement) {
+                document.body.innerHTML = "<h1>⚠️ 螢幕錄製偵測！</h1>";
+            }
+        });
     }
 
     // 當用戶點擊 PDF 連結時，開啟新分頁並顯示 PDF
@@ -352,11 +352,12 @@
                     <title>PDF 檢視器（禁止下載、列印、截圖）</title>
                     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
                     <style>
-                        body { margin: 0; text-align: center; font-family: Arial, sans-serif; background-color: black; }
+                        body { background-color: black; color: white; text-align: center; }
                         canvas { display: block; margin: 10px auto; border: 1px solid #ccc; pointer-events: none; }
                         .overlay { 
                             position: absolute; 
                             top: 0; left: 0; width: 100%; height: 100%; 
+                            background: rgba(0, 0, 0, 0.4); 
                             z-index: 1000; 
                         }
                         @media print {
@@ -376,7 +377,7 @@
                         pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js";
 
                         pdfjsLib.getDocument(url).promise.then(function (pdf) {
-                            document.getElementById("pdfContainer").innerHTML = ""; // 清空載入字樣
+                            document.getElementById("pdfContainer").innerHTML = "";
                             for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
                                 pdf.getPage(pageNum).then(function (page) {
                                     var scale = 1.5;
@@ -397,24 +398,9 @@
                                 });
                             }
                         }).catch(function(error) {
-                            document.getElementById("pdfContainer").innerHTML = "❌ 無法載入 PDF，請檢查檔案路徑！";
+                            document.getElementById("pdfContainer").innerHTML = "❌ 無法載入 PDF";
                             console.error("PDF 加載錯誤:", error);
                         });
-
-                        // 禁止列印
-                        window.onbeforeprint = function() {
-                            document.body.innerHTML = "<h1>⚠️ 禁止列印！</h1>";
-                            setTimeout(function() {
-                                location.reload();
-                            }, 2000);
-                        };
-
-                        // 禁止開發者工具
-                        setInterval(function() {
-                            if (window.outerWidth - window.innerWidth > 160 || window.outerHeight - window.innerHeight > 160) {
-                                document.body.innerHTML = "<h1>⚠️ 禁止開發者工具</h1>";
-                            }
-                        }, 1000);
                     <\/script>
                 </body>
                 </html>
